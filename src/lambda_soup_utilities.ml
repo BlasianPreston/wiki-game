@@ -59,19 +59,19 @@ let%expect_test "get_list_items" =
     |}]
 ;;
 
+let handle_text contents = let open Soup in (texts contents) |> String.concat ~sep:"" |> String.strip (* Helper function to handle text processing*)
+
 (* Gets the first item of all unordered lists contained in an HTML page. *)
 let get_first_item_of_all_unordered_lists contents : string list =
   let open Soup in
   parse contents
-  $$ "ul"
+  $$ "ul" (* Get all of the ul tags *)
   |> to_list
-  |> List.map ~f:(fun ul ->
+  |> List.map ~f:(fun ul -> (* Get the li elements in the ul *)
     select "li" ul
     |> to_list
-    |> List.hd_exn
-    |> texts
-    |> String.concat ~sep:""
-    |> String.strip)
+    |> List.hd_exn (* Gets the first item in the list *)
+    |> handle_text)
 ;;
 
 let%expect_test "get_first_item_of_all_unordered_lists" =
@@ -94,10 +94,8 @@ let get_first_item_of_second_unordered_list contents : string =
   let open Soup in
   parse contents
   $$ "ul"
-  |> R.nth 2 $ "li"
-  |> texts
-  |> String.concat ~sep:""
-  |> String.strip
+  |> R.nth 2 $ "li" (* Get the second ul and get the first li *)
+  |> handle_text
 ;;
 
 let%expect_test "get_first_item_of_second_unordered_list" =
@@ -120,10 +118,10 @@ let%expect_test "get_first_item_of_second_unordered_list" =
 let get_bolded_text contents : string list =
   let open Soup in
   parse contents
-  $$ "b"
+  $$ "b" (* Look for bold elements *)
   |> to_list
   |> List.map ~f:(fun elem ->
-    texts elem |> String.concat ~sep:"" |> String.strip)
+    handle_text elem) (* Process all of the bold elements separately *)
 ;;
 
 let%expect_test "get_bolded_text" =

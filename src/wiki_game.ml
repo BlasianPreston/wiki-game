@@ -14,9 +14,11 @@ open! Core
    One nice think about Wikipedia is that stringent content moderation results in
    uniformity in article format. We can expect that all Wikipedia article links parsed
    from a Wikipedia page will have the form "/wiki/<TITLE>". *)
+
+ let wikipedia_page_filter content = ignore content
+   
 let get_linked_articles contents : string list =
-  ignore (contents : string);
-  failwith "TODO"
+  (wikipedia_page_filter contents); [contents]
 ;;
 
 let print_links_command =
