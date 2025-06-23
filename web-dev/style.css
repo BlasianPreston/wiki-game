@@ -4,3 +4,7 @@ body {
     background: #FAFAFA;
     font-family: Helvetica;
 }
+div {
+    align-items: center;
+    justify-content: center;
+}
