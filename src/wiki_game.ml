@@ -15,10 +15,16 @@ open! Core
    uniformity in article format. We can expect that all Wikipedia article links parsed
    from a Wikipedia page will have the form "/wiki/<TITLE>". *)
 
- let wikipedia_page_filter content = ignore content
-   
+
 let get_linked_articles contents : string list =
-  (wikipedia_page_filter contents); [contents]
+  let open Soup in
+  parse contents
+  $$ "a[href]"
+  |> to_list
+  |> List.map ~f:(fun link -> R.attribute "href" link |> String.strip)
+  |> List.filter ~f:(fun link -> String.is_prefix ~prefix:"/wiki/" link)
+  |> List.filter ~f:(fun link -> Option.is_none (Wikipedia_namespace.namespace link))
+  |> List.remove_consecutive_duplicates ~equal:String.equal
 ;;
 
 let print_links_command =
@@ -49,8 +55,8 @@ let visualize_command =
   let open Command.Let_syntax in
   Command.basic
     ~summary:
-      "parse a file listing interstates and generate a graph visualizing the highway \
-       network"
+      "parse a file listing interstates and generate a graph visualizing \
+       the highway network"
     [%map_open
       let how_to_fetch = File_fetcher.How_to_fetch.param
       and origin = flag "origin" (required string) ~doc:" the starting page"
@@ -89,11 +95,14 @@ let find_path ?(max_depth = 3) ~origin ~destination ~how_to_fetch () =
 let find_path_command =
   let open Command.Let_syntax in
   Command.basic
-    ~summary:"Play wiki game by finding a link between the origin and destination pages"
+    ~summary:
+      "Play wiki game by finding a link between the origin and destination \
+       pages"
     [%map_open
       let how_to_fetch = File_fetcher.How_to_fetch.param
       and origin = flag "origin" (required string) ~doc:" the starting page"
-      and destination = flag "destination" (required string) ~doc:" the destination page"
+      and destination =
+        flag "destination" (required string) ~doc:" the destination page"
       and max_depth =
         flag
           "max-depth"

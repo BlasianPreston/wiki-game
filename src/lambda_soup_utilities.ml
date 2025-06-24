@@ -35,7 +35,7 @@ let get_list_items contents : string list =
   $$ "li"
   |> to_list
   |> List.map ~f:(fun li ->
-    texts li |> String.concat ~sep:"" |> String.strip |> String.strip) 
+    texts li |> String.concat ~sep:"" |> String.strip) 
 ;;
 
 let%expect_test "get_list_items" =
