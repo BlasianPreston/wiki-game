@@ -4,8 +4,9 @@ open! Core
    of strings containing that actor's main credits. *)
 let get_credits contents : string list =
   let open Soup in
+  let class_id_for_known_for = ".sc-c3958617-0" in 
   parse contents
-  $ ".sc-c3958617-0"
+  $ class_id_for_known_for (* Get all of the elements under the specific class id *)
   $$ "a"
   |> to_list
   |> List.map ~f:(fun li ->

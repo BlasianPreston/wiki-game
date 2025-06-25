@@ -19,12 +19,12 @@ open! Core
 let get_linked_articles contents : string list =
   let open Soup in
   parse contents
-  $$ "a[href]"
+  $$ "a[href]" 
   |> to_list
-  |> List.map ~f:(fun link -> R.attribute "href" link |> String.strip)
-  |> List.filter ~f:(fun link -> String.is_prefix ~prefix:"/wiki/" link)
-  |> List.filter ~f:(fun link -> Option.is_none (Wikipedia_namespace.namespace link))
-  |> List.remove_consecutive_duplicates ~equal:String.equal
+  |> List.map ~f:(fun link -> R.attribute "href" link |> String.strip) (* Get all of the links from the href attributes *)
+  |> List.filter ~f:(fun link -> String.is_prefix ~prefix:"/wiki/" link) 
+  |> List.filter ~f:(fun link -> Option.is_none (Wikipedia_namespace.namespace link)) (* Gets rid of all the bad namespaces*)
+  |> List.dedup_and_sort ~compare:String.compare
 ;;
 
 let print_links_command =
