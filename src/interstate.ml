@@ -7,10 +7,10 @@ module Highway_name = struct
   let default = ""
 end
 
-(* We separate out the [Network] module to represent our social network in OCaml types. *)
-module Network = struct
-  (* We can represent our social network graph as a set of connections, where a connection
-     represents a friendship between two people. *)
+(* We separate out the [Highway_System] module to represent our Highway System in OCaml types. *)
+module Highway_System = struct
+  (* We can represent our highway graph as a set of edges, where an edge
+     represents a highway between two states. *)
   module Highway = struct
     module T = struct
       type t =
@@ -20,8 +20,8 @@ module Network = struct
       [@@deriving compare, sexp]
     end
 
-    (* This funky syntax is necessary to implement sets of [Connection.t]s. This is needed
-       to defined our [Network.t] type later. Using this [Comparable.Make] functor also
+    (* This funky syntax is necessary to implement sets of [Highway.t]s. This is needed
+       to defined our [Highway_System.t] type later. Using this [Comparable.Make] functor also
        gives us immutable maps, which might come in handy later. *)
     include T
     include Comparable.Make (T)
@@ -59,8 +59,6 @@ module Network = struct
       |> List.concat_map ~f:(fun s ->
         match Highway.of_string s with
         | Some lst -> lst
-        (* Friendships are mutual; a connection between a and b means we should also
-           consider the connection between b and a. *)
         | None ->
           printf
             "ERROR: Could not parse line as connection; dropping. %s\n"
@@ -105,10 +103,10 @@ let load_command =
             "FILE a file listing interstates and the cities they go through"
       in
       fun () ->
-        let network = Network.of_file input_file in
+        let network = Highway_System.of_file input_file in
         (* This special syntax can be used to easily sexp-serialize values (whose types
            have [sexp_of_t] implemented). *)
-        printf !"%{sexp: Network.t}\n" network]
+        printf !"%{sexp: Highway_System.t}\n" network]
 ;;
 
 let visualize_command =
@@ -132,9 +130,9 @@ let visualize_command =
           ~doc:"FILE where to write generated graph"
       in
       fun () ->
-        let network = Network.of_file input_file in
+        let highway_system = Highway_System.of_file input_file in
         let graph = G.create () in
-        Set.iter network ~f:(fun highway ->
+        Set.iter highway_system ~f:(fun highway ->
           (* [G.add_edge] auomatically adds the endpoints as vertices in the graph if
              they don't already exist. *)
           let city1, city2 = highway.cities in
