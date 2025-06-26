@@ -41,6 +41,23 @@ module Network = struct
     in
     Connection.Set.of_list connections
   ;;
+
+  (* Make a function that gets all the nearest neighbors to the specified node *)
+  (* Continue through each value in the set and add visited nodes to the visited set *)
+  (* Run the nearest neighbors on the nodes that are connected to the source node *)
+  (* Continue this until the queue is empty which will signal that all neighbors have been found*)
+
+  let get_first_person (first, _) : string = first
+  let get_second_person (_, second) : string = second
+
+  let get_neighbors network (person : Person.t) =
+    let lst = Set.to_list network in
+    lst
+    |> List.filter_map ~f:(fun connection ->
+      if String.equal (get_first_person connection) person
+      then Some (get_second_person connection)
+      else None)
+  ;;
 end
 
 let load_command =
@@ -122,8 +139,26 @@ let visualize_command =
 
 (* [find_friend_group network ~person] returns a list of all people who are mutually
    connected to the provided [person] in the provided [network]. *)
-let find_friend_group network ~person : Person.t list =
-  ignore network; [person]
+let find_friend_group (network : Network.t) ~person : Person.t list =
+  let visited = Person.Hash_set.create () in
+  let queue = Queue.create () in
+  Queue.enqueue queue person;
+  let rec traverse  () =
+    match Queue.dequeue queue with
+    | None -> ()
+    | Some node ->
+      if not (Hash_set.mem visited node)
+      then (
+        Hash_set.add visited node;
+        let adjacent_nodes = Network.get_neighbors network node in
+        (*let () = print_s [%message (queue : Person.t Queue.t) (node : Person.t) (adjacent_nodes : Person.t list)] in *)
+        (* Great way to print for debugging *)
+        List.iter adjacent_nodes ~f:(fun next_node ->
+          Queue.enqueue queue next_node));
+      traverse ()
+  in
+  let () = traverse () in
+  Hash_set.to_list visited
 ;;
 
 let find_friend_group_command =
